@@ -1,0 +1,32 @@
+paths:
+  interactions: /home/fac/ashok.sairam/btp-varun/btp-1/lastfm_9000_users.csv
+  user_features: /home/fac/ashok.sairam/btp-varun/btp-1/user_features_9000.csv
+data:
+  name: lastfm
+  min_interactions: 2
+  dataset_type: lastfm
+  feature_type: none
+  sparsity: 2.5
+model:
+  hidden_channels: 64
+  num_neighbors:
+  - 20
+  - 10
+  name: Model_without
+training:
+  num_epochs: 30
+  batch_size: 512
+  lr: 0.001
+  patience: 5
+  num_runs: 3
+  seed: 42
+  device: cuda
+  neg_sampling_ratio: 2.0
+eval:
+  k_list:
+  - 3
+  - 5
+  - 10
+  num_negatives: 99
+experiment_name: lastfm_without_sparse2.5
+save_dir: results/lastfm_ablation/lastfm_without_sparse2.5

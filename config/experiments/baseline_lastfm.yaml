@@ -1,0 +1,34 @@
+experiment_name: "baseline_linear"
+
+paths:
+  interactions: "/home/fac/ashok.sairam/btp-varun/btp-1/lastfm_9000_users.csv"
+  user_info: "/home/fac/ashok.sairam/btp-varun/btp-1/user_features_9000.csv"
+
+data:
+  name: "lastfm"
+  sparsity_percentile: 1.0
+  min_interactions: 2
+  personality_type: "real"  # real, shuffled, random, noise
+  noise_distribution: null
+
+model:
+  name: "Model_linear"
+  hidden_channels: 5
+  num_neighbors: [20, 10]
+  personality_loss_weight: 0.0
+
+training:
+  num_epochs: 5
+  batch_size: 128
+  lr: 0.001
+  patience: 7
+  num_runs: 3
+  seed: 42
+  device: "cuda"
+  neg_sampling_ratio: 2.0
+
+eval:
+  k_list: [3, 5, 10]
+  num_negatives: 99
+
+save_dir: "results/baseline"

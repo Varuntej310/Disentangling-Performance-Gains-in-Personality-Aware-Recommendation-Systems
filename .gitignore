@@ -1,0 +1,29 @@
+# Data files
+*.csv
+*.tsv
+data/
+!data/__init__.py
+!data/*.py
+
+# Results
+results/
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment
+venv/
+env/
+.env
+
+# IDE
+.vscode/settings.json
+
+readme.md

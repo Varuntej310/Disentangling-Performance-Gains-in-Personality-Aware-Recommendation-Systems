@@ -1,0 +1,36 @@
+paths:
+  ratings: /home/fac/ashok.sairam/btp-varun/btp-1/ratings.csv
+  personality: /home/fac/ashok.sairam/btp-varun/btp-1/personality-data.csv
+data:
+  name: movielens
+  min_interactions: 2
+  personality_columns:
+  - openness
+  - agreeableness
+  - emotional_stability
+  - conscientiousness
+  - extraversion
+  sparsity_percentile: 60.0
+  personality_type: real
+  noise_distribution: null
+model:
+  name: LightGCN
+  embedding_dim: 5
+  num_layers: 2
+training:
+  num_epochs: 50
+  batch_size: 512
+  lr: 0.01
+  patience: 12
+  num_runs: 3
+  seed: 42
+  device: cuda
+  neg_sampling_ratio: 2.0
+eval:
+  k_list:
+  - 3
+  - 5
+  - 10
+  num_negatives: 99
+experiment_name: lightgcn_sp60
+save_dir: results/lightgcn_sparsity/lightgcn_sp60
