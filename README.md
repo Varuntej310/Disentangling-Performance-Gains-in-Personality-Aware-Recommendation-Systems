@@ -1,154 +1,109 @@
 # Semantic Enhancement or Regularization?
+
 ### Disentangling Performance Gains in Personality-Aware Recommendation Systems
 
-This repository contains the official implementation for the paper:
+Official implementation for:
 
-> **Semantic Enhancement or Regularization? Disentangling Performance Gains in Personality-Aware Recommendation Systems**  
-> Abhradeep Datta, Varun Tej Kasula, Ashok Singh Sairam  
-> IIT Guwahati
+**Semantic Enhancement or Regularization? Disentangling Performance Gains in Personality-Aware Recommendation Systems**
+Abhradeep Datta*, Varun Tej Kasula*, Ashok Singh Sairam
+Indian Institute of Technology Guwahati
+(* equal contribution)
 
----
+## Setup
 
-# Disentangling Performance Gains in Personality-Aware Recommendation Systems
-
-This repository contains the implementation of experiments analyzing how personality features influence graph-based recommendation systems. The focus is on understanding performance gains through factors such as sparsity, noise injection, and model design.
-
----
-
-## Overview
-
-This project investigates:
-
-* The role of personality features in recommendation systems
-* The effect of graph sparsity on model performance
-* The impact of noise injection strategies
-* Comparisons between different model architectures (e.g., LightGCN, GAT, NGCF)
-* Multi-task learning vs. simple feature concatenation
-
----
-
-## Requirements
-
-* Python 3.10+
-* PyTorch 2.5.1 (CUDA 12.1 recommended)
-* PyTorch Geometric dependencies
-* Additional packages listed in `requirements.txt`
-
----
-
-## Installation
+Create a Python environment:
 
 ```bash
-# Create environment
 conda create -n gpu python=3.10 -y
 conda activate gpu
+```
 
-# Install PyTorch (CUDA 12.1)
+Install PyTorch (CUDA 12.1):
+
+```bash
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
 
-# Install PyTorch Geometric dependencies
+Install PyTorch Geometric dependencies:
+
+```bash
 pip install torch-scatter torch-sparse torch-cluster torch-spline-conv \
 -f https://data.pyg.org/whl/torch-2.5.1+cu121.html
+```
 
-# Install remaining dependencies
+Install remaining requirements:
+
+```bash
 pip install -r requirements.txt
 ```
 
----
+### Older Systems
 
-## Project Structure
+If installation fails with:
 
-```
-├── config/                  # Configuration files
-├── data/                    # Dataset loading modules
-├── models/                  # Model implementations
-├── training/                # Training and evaluation logic
-├── experiments/             # Experiment scripts
-├── utils/                   # Helper functions
-├── notebooks/               # Jupyter notebooks
-├── requirements.txt
-└── README.md
+```text
+OSError: /lib64/libm.so.6: version `GLIBC_2.29' not found
 ```
 
----
-
-## Datasets
-
-This project uses:
-
-### 1. MovieLens (Enhanced with Personality Features)
-
-* User-item interaction data
-* Personality feature vectors
-
-### 2. LastFM Dataset
-
-* User-artist interaction data
-* Configurations available in `config/experiments_lastfm/`
-
-**Note:** Datasets are not included in this repository.
-
----
+remove `pyg-lib`, which requires GLIBC >= 2.29.
 
 ## Running Experiments
 
-All experiments are configuration-driven.
-
-### Example Workflows
+Generate experiment configurations:
 
 ```bash
-# Generate ablation configs
 python -m experiments.generate_ablation_experiments
-
-# Run ablation experiments
-python -m experiments.run_ablation_experiments config/experiments/ablation_table/
-
-# Run batch experiments
-python -m experiments.run_batch_experiments config/experiments/
-
-# Run LastFM experiments
-python -m experiments.run_lastfm_experiments config/experiments_lastfm/
 ```
 
----
-
-## GPU Execution (Recommended)
+Run ablation experiments:
 
 ```bash
-tmux new -s experiments
+python -m experiments.run_ablation_experiments config/experiments/ablation_table/
+```
 
+## Example Reproduction
+
+The following commands reproduce the ablation study results for personality 2018 dataset
+
+```bash
+python -m experiments.generate_ablation_experiments
+python -m experiments.run_ablation_experiments config/experiments/ablation_table/
+python -m experiments.format_ablation_latex
+```
+
+## Running on a GPU Server
+
+Start a persistent tmux session:
+
+```bash
+tmux new -s work
+```
+
+Inside the session:
+
+```bash
 conda activate gpu
 export CUDA_VISIBLE_DEVICES=0
-
-python -m experiments.run_batch_experiments config/experiments/
-
-# Detach: Ctrl+B → D
-# Reattach: tmux attach -t experiments
 ```
 
----
+Run experiments normally:
 
-## Experiment Configuration
-
-Experiments are defined using YAML files:
-
-```yaml
-name: "experiment_name"
-model: "lightgcn"
-dataset: "base"
-personality_injection: "add"
-noise_type: "gaussian"
-noise_magnitude: 0.1
-sparsity_level: 0.05
-lambda_param: 0.5
+```bash
+python -m experiments.run_ablation_experiments config/experiments/ablation_table/
 ```
 
----
+Detach without stopping the job:
 
-## Key Insights
+```text
+Ctrl+B, then D
+```
 
-* Graph sparsity significantly affects recommendation quality
-* Noise injection can destabilize training depending on type and magnitude
-* Multi-task learning improves robustness over simple concatenation
-* Different models respond differently to personality features
+Reconnect later:
 
+```bash
+tmux attach -t work
+```
+
+## Data
+
+Datasets are not distributed with this repository.

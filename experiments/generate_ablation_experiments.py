@@ -13,12 +13,6 @@ from config.experiment_config import ExperimentConfig
 
 
 def generate_ablation_table_configs(output_dir="config/experiments/ablation_table"):
-    """
-    Generate all config files needed for the ablation table
-    
-    Returns:
-        List of generated config file paths
-    """
     os.makedirs(output_dir, exist_ok=True)
     
     # Experiment parameters
@@ -152,9 +146,6 @@ def generate_ablation_table_configs(output_dir="config/experiments/ablation_tabl
 
 
 def create_ablation_analysis_script(output_file="analyze_ablation_results.py"):
-    """
-    Create a script to analyze results and extract ablation metrics
-    """
     script_content = '''"""
 Analyze ablation experiment results and compute personality vs zeroed metrics
 """

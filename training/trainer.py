@@ -24,30 +24,12 @@ def train_gnn_model(
     personality_loss_weight=0.0,
     verbose=True
 ):
-    """
-    Train a GNN-based recommendation model
-    
-    Args:
-        model_class: Model class to instantiate
-        data: HeteroData object
-        train_edges: Training edges
-        val_edges: Validation edges
-        test_edges: Test edges
-        config: ExperimentConfig object
-        personality_loss_weight: Override config value if provided
-        verbose: Whether to print progress
-    
-    Returns:
-        results: Dict of test metrics
-        model: Trained model
-    """
     torch.manual_seed(config.training.seed)
     np.random.seed(config.training.seed)
     
     device = torch.device(config.training.device if torch.cuda.is_available() else 'cpu')
     data_device = data.to(device)
-    
-    # Create train loader
+
     edge_label_index = torch.tensor(train_edges.T, dtype=torch.long)
     edge_label = torch.ones(edge_label_index.size(1), dtype=torch.float)
     
@@ -110,7 +92,6 @@ def train_gnn_model(
     # lambda_0 = personality_loss_weight
     # tau = config.training.num_epochs / 3
 
-    # Training loop
     for epoch in range(1, config.training.num_epochs + 1):
         model.train()
         total_loss = 0.0
@@ -200,7 +181,6 @@ def train_gnn_model(
 
 def evaluate_model_full_graph(model, model_class, data_device, val_edges, 
                                user_train_set, config, epoch, verbose=True):
-    """Evaluate model on full graph"""
     model.eval()
     with torch.no_grad():
         user_emb, movie_emb = get_full_embeddings(model, model_class, data_device, config)
@@ -219,7 +199,6 @@ def evaluate_model_full_graph(model, model_class, data_device, val_edges,
 
 
 def get_full_embeddings(model, model_class, data_device, config):
-    """Get embeddings for all users and movies"""
     device = next(model.parameters()).device
     num_users = data_device["user"].num_nodes
     num_movies = data_device["movie"].num_nodes
@@ -253,7 +232,6 @@ def get_full_embeddings(model, model_class, data_device, config):
 
 
 def train_lightgcn(data, train_edges, val_edges, test_edges, config, verbose=True):
-    """Train LightGCN model"""
     from models.lightgcn import LightGCN
     
     torch.manual_seed(config.training.seed)

@@ -10,7 +10,6 @@ from pathlib import Path
 
 
 def create_base_config():
-    """Base configuration template"""
     return {
         'paths': {
             'ratings': "/home/fac/ashok.sairam/btp-varun/btp-1/ratings.csv",
@@ -45,11 +44,6 @@ def create_base_config():
 
 
 def generate_lightgcn_sparsity_experiments(output_dir="config/experiments/lightgcn_sparsity"):
-    """
-    Generate LightGCN experiments across different sparsity levels
-    
-    Sparsity levels: 5%, 30%, 60%, 100%
-    """
     os.makedirs(output_dir, exist_ok=True)
 
     sparsity_levels = [5, 30, 60, 100]
@@ -90,19 +84,13 @@ def generate_lightgcn_sparsity_experiments(output_dir="config/experiments/lightg
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
         
         generated_files.append(filepath)
-        print(f"  ✓ {filename}")
+        print(f"   {filename} doen")
     
-    print(f"\n✓ Generated {len(generated_files)} LightGCN configs in {output_dir}")
+    print(f"\n Generated {len(generated_files)} LightGCN configs in {output_dir}")
     return generated_files
 
 
 def generate_lambda_sweep_experiments(output_dir="config/experiments/lambda_sweep"):
-    """
-    Generate lambda sweep experiments for MTL model
-    
-    Lambda values: 0.0, 0.1, 0.25, 0.5, 0.75, 1.0, 10
-    Sparsity: 5% (default)
-    """
     os.makedirs(output_dir, exist_ok=True)
     
     lambda_values = [0.0, 0.1, 0.25, 0.5, 0.75, 1.0, 10]
@@ -137,20 +125,13 @@ def generate_lambda_sweep_experiments(output_dir="config/experiments/lambda_swee
             yaml.dump(config, f, default_flow_style=False, sort_keys=False)
         
         generated_files.append(filepath)
-        print(f"  ✓ {filename}")
+        print(f"   {filename} done")
     
-    print(f"\n✓ Generated {len(generated_files)} lambda sweep configs in {output_dir}")
+    print(f"\n Generated {len(generated_files)} lambda sweep configs in {output_dir}")
     return generated_files
 
 
 def generate_noise_distribution_experiments(output_dir="config/experiments/noise_distributions"):
-    """
-    Generate noise distribution experiments
-    
-    Distributions: uniform, normal, laplace, bernoulli, exponential
-    Models: Linear
-    Sparsity: 5% (default)
-    """
     os.makedirs(output_dir, exist_ok=True)
     
     distributions = ['uniform', 'normal', 'laplace', 'bernoulli', 'exponential']
@@ -189,15 +170,14 @@ def generate_noise_distribution_experiments(output_dir="config/experiments/noise
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
             
             generated_files.append(filepath)
-            print(f"  ✓ {filename}")
+            print(f"   {filename} done")
     
-    print(f"\n✓ Generated {len(generated_files)} noise distribution configs in {output_dir}")
+    print(f"\n Generated {len(generated_files)} noise distribution configs in {output_dir}")
     return generated_files
 
 
 
 def print_summary(all_generated):
-    """Print summary of all generated configs"""
     print("\n" + "="*70)
     print("GENERATION COMPLETE - SUMMARY")
     print("="*70)

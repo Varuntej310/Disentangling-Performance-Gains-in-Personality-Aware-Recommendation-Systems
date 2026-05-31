@@ -12,14 +12,6 @@ from experiments.run_experiment import run_single_experiment
 
 
 def run_batch_experiments(config_dir: str, pattern: str = "*.yaml"):
-    """
-    Run multiple experiments from a directory of YAML configs
-    
-    Args:
-        config_dir: Directory containing YAML config files
-        pattern: Glob pattern for config files (default: *.yaml)
-    """
-    # Find all config files
     config_pattern = os.path.join(config_dir, pattern)
     config_files = sorted(glob.glob(config_pattern))
     
@@ -35,7 +27,6 @@ def run_batch_experiments(config_dir: str, pattern: str = "*.yaml"):
         print(f"  {i}. {os.path.basename(cfg)}")
     print("="*70)
     
-    # Run all experiments
     all_results = []
     
     for i, config_path in enumerate(config_files, 1):
@@ -52,7 +43,6 @@ def run_batch_experiments(config_dir: str, pattern: str = "*.yaml"):
             traceback.print_exc()
             continue
     
-    # Create summary
     print("\n" + "="*70)
     print("BATCH SUMMARY")
     print("="*70)
@@ -70,11 +60,9 @@ def run_batch_experiments(config_dir: str, pattern: str = "*.yaml"):
     
     summary_df = pd.DataFrame(summary_data)
     
-    # Print summary table
     print("\nResults Summary:")
     print(summary_df[['experiment', 'model', 'HR@10', 'NDCG@10']].to_string(index=False))
     
-    # Save summary
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     summary_path = f"results/batch_summary_{timestamp}.csv"
     os.makedirs("results", exist_ok=True)
@@ -91,31 +79,20 @@ def generate_lambda_sweep_configs(
     lambdas: list,
     output_dir: str = "config/experiments/lambda_sweep"
 ):
-    """
-    Generate multiple config files for lambda sweep
-    
-    Args:
-        base_config_path: Path to base YAML config
-        lambdas: List of lambda values to sweep
-        output_dir: Directory to save generated configs
-    """
     from config.experiment_config import ExperimentConfig
     
     os.makedirs(output_dir, exist_ok=True)
     
-    # Load base config
     base_config = ExperimentConfig.from_yaml(base_config_path)
     
     generated_files = []
     
     for lam in lambdas:
-        # Modify config
         config = ExperimentConfig.from_dict(base_config.to_dict())
         config.experiment_name = f"lambda_{lam}"
         config.model.personality_loss_weight = lam
         config.save_dir = f"results/lambda_sweep/lambda_{lam}"
         
-        # Save
         output_path = os.path.join(output_dir, f"lambda_{lam}.yaml")
         config.to_yaml(output_path)
         generated_files.append(output_path)
@@ -129,25 +106,15 @@ def generate_noise_sweep_configs(
     distributions: list,
     output_dir: str = "config/experiments/noise_sweep"
 ):
-    """
-    Generate multiple config files for noise distribution sweep
-    
-    Args:
-        base_config_path: Path to base YAML config
-        distributions: List of noise distributions
-        output_dir: Directory to save generated configs
-    """
     from config.experiment_config import ExperimentConfig
     
     os.makedirs(output_dir, exist_ok=True)
     
-    # Load base config
     base_config = ExperimentConfig.from_yaml(base_config_path)
     
     generated_files = []
     
     for dist in distributions:
-        # Modify config
         config = ExperimentConfig.from_dict(base_config.to_dict())
         config.experiment_name = f"noise_{dist}"
         config.data.personality_type = "noise"

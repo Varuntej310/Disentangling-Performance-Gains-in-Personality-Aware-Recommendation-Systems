@@ -8,22 +8,6 @@ from collections import defaultdict
 
 def evaluate_embeddings(user_emb_np, movie_emb_np, test_edges, train_edges_set,
                         num_negatives=99, K_list=(3, 5, 10), rng=None):
-    """
-    Evaluate recommendation performance using Hit Rate and NDCG
-    
-    Args:
-        user_emb_np: User embeddings (numpy array)
-        movie_emb_np: Movie embeddings (numpy array)
-        test_edges: Test edges [(user, movie), ...]
-        train_edges_set: Dict mapping user -> set of known items
-        num_negatives: Number of negative samples per test case
-        K_list: List of K values for HR@K and NDCG@K
-        rng: Random number generator
-    
-    Returns:
-        hr_dict: Hit rate at different K
-        ndcg_dict: NDCG at different K
-    """
     if rng is None:
         rng = np.random.RandomState(0)
     
@@ -44,12 +28,11 @@ def evaluate_embeddings(user_emb_np, movie_emb_np, test_edges, train_edges_set,
                 continue
             negs.append(cand)
         
-        # Score all candidates
+        # Score candidates
         candidates = [pos] + negs
         scores = movie_emb_np[candidates] @ user_emb_np[u]
         order = np.argsort(-scores)
         
-        # Find rank of positive item
         rank_of_pos = int(np.where(order == 0)[0][0])
         
         count += 1

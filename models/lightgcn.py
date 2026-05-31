@@ -8,7 +8,6 @@ from collections import defaultdict
 
 
 class LightGCN(torch.nn.Module):
-    """LightGCN: Simplifying and Powering Graph Convolution Network for Recommendation"""
     def __init__(self, num_users, num_movies, embedding_dim, num_layers=3):
         super().__init__()
         self.num_users = num_users
@@ -23,17 +22,10 @@ class LightGCN(torch.nn.Module):
         torch.nn.init.normal_(self.movie_emb.weight, std=0.1)
     
     def forward(self, edge_index):
-        """
-        edge_index: bipartite COO with users [0..U-1], movies [0..M-1]
-                    shape [2, E], users -> movies
-        """
         U, M = self.num_users, self.num_movies
-        
-        # Initial embeddings
         emb = torch.cat([self.user_emb.weight, self.movie_emb.weight], dim=0)
         all_embs = [emb]
         
-        # Build symmetric normalized adjacency once
         row, col = edge_index
         col = col + U  # shift movies
         
@@ -52,8 +44,7 @@ class LightGCN(torch.nn.Module):
         A = torch.sparse_coo_tensor(
             indices, norm, (U + M, U + M)
         ).to(emb.device)
-        
-        # Propagation
+
         for _ in range(self.num_layers):
             emb = torch.sparse.mm(A, emb)
             all_embs.append(emb)

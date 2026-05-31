@@ -11,19 +11,6 @@ from models.graphsage_models import Model_concat, Model_graphsage
 
 
 def get_embeddings_with_user_x(model, model_class, data_device, user_x_override=None):
-    """
-    Get embeddings with optional personality override
-    
-    Args:
-        model: Trained model
-        model_class: Class of the model
-        data_device: HeteroData on device
-        user_x_override: Optional tensor to override user.x
-    
-    Returns:
-        user_emb: User embeddings (numpy)
-        movie_emb: Movie embeddings (numpy)
-    """
     model.eval()
     with torch.no_grad():
         if user_x_override is None:
@@ -63,26 +50,9 @@ def get_embeddings_with_user_x(model, model_class, data_device, user_x_override=
 
 def evaluate_personality_ablation(model, model_class, data_device, test_edges, 
                                    train_edges, config):
-    """
-    Evaluate model with real vs zeroed personality features
-    
-    Args:
-        model: Trained model
-        model_class: Class of the model
-        data_device: HeteroData on device
-        test_edges: Test edges
-        train_edges: Combined train+val edges
-        config: Configuration object
-    
-    Returns:
-        Dict with 'real', 'zero', and 'delta' metrics
-    """
-    # Build known positives
     train_set = defaultdict(set)
     for u, i in train_edges:
         train_set[int(u)].add(int(i))
-    
-    # Evaluate with real personalities
     user_emb, movie_emb = get_embeddings_with_user_x(
         model, model_class, data_device, user_x_override=None
     )

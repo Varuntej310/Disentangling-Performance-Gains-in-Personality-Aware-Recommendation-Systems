@@ -1,6 +1,5 @@
 """
 Training functions for GAT and NGCF models
-Separate file to avoid modifying existing GraphSAGE trainer
 """
 import torch
 import torch.nn.functional as F
@@ -24,18 +23,11 @@ def train_gat_ngcf_model(
     personality_loss_weight=0.0,
     verbose=True
 ):
-    """
-    Train GAT or NGCF models
-    
-    Very similar to train_gnn_model but handles GAT/NGCF specific features
-    """
     torch.manual_seed(config.training.seed)
     np.random.seed(config.training.seed)
     
     device = torch.device(config.training.device if torch.cuda.is_available() else 'cpu')
     data_device = data.to(device)
-    
-    # Create train loader
     edge_label_index = torch.tensor(train_edges.T, dtype=torch.long)
     edge_label = torch.ones(edge_label_index.size(1), dtype=torch.float)
     
@@ -48,13 +40,11 @@ def train_gat_ngcf_model(
         batch_size=config.training.batch_size,
         shuffle=True,
     )
-    
-    # Build user train set
+
     user_train_set = defaultdict(set)
     for u, i in train_edges:
         user_train_set[int(u)].add(int(i))
     
-    # Initialize model
     num_users = data_device["user"].num_nodes
     num_movies = data_device["movie"].num_nodes
     
@@ -63,8 +53,7 @@ def train_gat_ngcf_model(
         num_users=num_users,
         num_movies=num_movies
     ).to(device)
-    
-    # Set metadata
+
     model.set_metadata(data_device.metadata())
     
     optimizer = torch.optim.Adam(model.parameters(), lr=config.training.lr)
@@ -77,7 +66,6 @@ def train_gat_ngcf_model(
     if personality_loss_weight == 0.0 and hasattr(config.model, 'personality_loss_weight'):
         personality_loss_weight = config.model.personality_loss_weight
     
-    # Training loop
     for epoch in range(1, config.training.num_epochs + 1):
         model.train()
         total_loss = 0.0
@@ -166,7 +154,6 @@ def train_gat_ngcf_model(
 
 def evaluate_gat_ngcf_full_graph(model, model_class, data_device, val_edges,
                                   user_train_set, config, epoch, verbose=True):
-    """Evaluate GAT/NGCF on full graph"""
     model.eval()
     with torch.no_grad():
         user_emb, movie_emb = get_gat_ngcf_embeddings(model, model_class, data_device, config)
@@ -184,12 +171,6 @@ def evaluate_gat_ngcf_full_graph(model, model_class, data_device, val_edges,
 
 
 def get_gat_ngcf_embeddings(model, model_class, data_device, config):
-    """
-    Get final embeddings for GAT and NGCF models
-    
-    These models may have different structures than GraphSAGE,
-    so we handle them separately
-    """
     device = next(model.parameters()).device
     num_users = data_device["user"].num_nodes
     num_movies = data_device["movie"].num_nodes
@@ -235,7 +216,6 @@ def get_gat_ngcf_embeddings(model, model_class, data_device, config):
         
         movie_x = model.movie_emb.weight
         
-        # Propagate through NGCF layers
         edge_index = data_device["user", "rates", "movie"].edge_index
         
         user_embeddings = [user_x]

@@ -30,11 +30,6 @@ from training.gat_ngcf_trainer import train_gat_ngcf_model
 
 
 def run_single_experiment(config_path: str):
-    """
-    Run a single experiment from YAML config
-    Supports GraphSAGE, GAT, NGCF, and LightGCN models
-    """
-    # Load config
     config = ExperimentConfig.from_yaml(config_path)
     print("="*70)
     print("STARTING EXPERIMENT")

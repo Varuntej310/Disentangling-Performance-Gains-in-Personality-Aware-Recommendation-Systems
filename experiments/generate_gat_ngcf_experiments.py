@@ -13,7 +13,6 @@ from pathlib import Path
 
 
 def create_base_config():
-    """Base configuration template"""
     return {
         'paths': {
             'ratings': "/kaggle/input/personality-2018/personality-isf2018/ratings.csv",
@@ -50,15 +49,6 @@ def create_base_config():
 
 
 def generate_architecture_comparison(output_dir="config/experiments/architecture_comparison"):
-    """
-    Compare GraphSAGE, GAT, and NGCF with different personality integration methods
-    
-    For each architecture test:
-    - Linear integration
-    - Concatenation integration
-    - Multi-task learning
-    - Architecture-specific variant
-    """
     os.makedirs(output_dir, exist_ok=True)
     generated_files = []
     
@@ -114,10 +104,6 @@ def generate_architecture_comparison(output_dir="config/experiments/architecture
 
 
 def generate_gat_ablation(output_dir="config/experiments/gat_ablation"):
-    """
-    Ablation study for GAT models
-    Test with: real, shuffled, noise, and no personality
-    """
     os.makedirs(output_dir, exist_ok=True)
     generated_files = []
     
@@ -160,17 +146,13 @@ def generate_gat_ablation(output_dir="config/experiments/gat_ablation"):
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
             
             generated_files.append(filepath)
-            print(f"  ✓ {filename}")
+            print(f"   {filename} done")
     
-    print(f"\n✓ Generated {len(generated_files)} configs in {output_dir}")
+    print(f"\n Generated {len(generated_files)} configs in {output_dir}")
     return generated_files
 
 
 def generate_ngcf_ablation(output_dir="config/experiments/ngcf_ablation"):
-    """
-    Ablation study for NGCF models
-    Test with: real, shuffled, noise, and no personality
-    """
     os.makedirs(output_dir, exist_ok=True)
     generated_files = []
     
@@ -220,10 +202,6 @@ def generate_ngcf_ablation(output_dir="config/experiments/ngcf_ablation"):
 
 
 def generate_cross_architecture_ablation(output_dir="config/experiments/cross_architecture"):
-    """
-    Compare all three architectures (GraphSAGE, GAT, NGCF) head-to-head
-    across different sparsity levels
-    """
     os.makedirs(output_dir, exist_ok=True)
     generated_files = []
     
@@ -261,14 +239,13 @@ def generate_cross_architecture_ablation(output_dir="config/experiments/cross_ar
                 yaml.dump(config, f, default_flow_style=False, sort_keys=False)
             
             generated_files.append(filepath)
-            print(f"  ✓ {filename}")
+            print(f"   {filename} done")
     
-    print(f"\n✓ Generated {len(generated_files)} configs in {output_dir}")
+    print(f"\n Generated {len(generated_files)} configs in {output_dir}")
     return generated_files
 
 
 def print_summary(all_generated):
-    """Print summary"""
     print("\n" + "="*70)
     print("GAT & NGCF EXPERIMENT GENERATION COMPLETE")
     print("="*70)
@@ -322,7 +299,6 @@ def print_summary(all_generated):
 
 
 def main():
-    """Main generation function"""
     print("\n" + "="*70)
     print("GAT & NGCF EXPERIMENT CONFIG GENERATOR")
     print("="*70)
@@ -343,7 +319,7 @@ def main():
     
     print_summary(all_generated)
     
-    print("\n✓ Setup complete! Ready to test new architectures.")
+    print("\n Setup complete.")
 
 
 if __name__ == "__main__":

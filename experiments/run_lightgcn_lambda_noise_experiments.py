@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 Run all comprehensive experiments sequentially
 """
@@ -7,16 +6,12 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-# Add current directory to path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from run_batch_experiments import run_batch_experiments
 
 
 def main():
-    """Run all comprehensive experiment groups"""
-    
-    # Define all experiment groups
     experiments = [
         ('config/experiments/lightgcn_sparsity', 'LightGCN Sparsity Sweep', 4),
         ('config/experiments/lambda_sweep', 'Lambda Sweep (MTL)', 7),
@@ -37,7 +32,6 @@ def main():
     
     print("\n" + "="*80)
     
-    # Confirm
     response = input("\nProceed with all experiments? [y/N]: ")
     if response.lower() not in ['y', 'yes']:
         print("Aborted by user.")
@@ -49,14 +43,12 @@ def main():
     results_summary = []
     failed_groups = []
     
-    # Run each experiment group
     for i, (config_dir, name, expected_count) in enumerate(experiments, 1):
         print("\n" + "#"*80)
         print(f"# GROUP {i}/{len(experiments)}: {name}")
         print(f"# Expected: {expected_count} experiments")
         print("#"*80 + "\n")
         
-        # Check if directory exists
         if not os.path.exists(config_dir):
             print(f"⚠️  Warning: Config directory not found: {config_dir}")
             print(f"   Skipping this group. Did you run generate_comprehensive_experiments.py?")
@@ -148,7 +140,7 @@ def main():
     
     # Failed groups
     if failed_groups:
-        print("\n⚠️  Failed/Incomplete Groups:")
+        print("\n  Failed/Incomplete Groups:")
         for name, reason in failed_groups:
             print(f"  - {name}: {reason}")
     
@@ -171,13 +163,13 @@ def main():
     
     # Return code based on success
     if total_completed == total_expected:
-        print("\n✓ All experiments completed successfully!")
+        print("\n All experiments completed successfully!")
         return 0
     elif total_completed > 0:
-        print(f"\n⚠  Partial completion: {total_completed}/{total_expected} experiments")
+        print(f"\n  Partial completion: {total_completed}/{total_expected} experiments")
         return 1
     else:
-        print("\n❌ No experiments completed")
+        print("\n No experiments completed")
         return 2
 
 
@@ -189,7 +181,7 @@ if __name__ == "__main__":
         print("\n\nInterrupted by user. Exiting...")
         sys.exit(130)
     except Exception as e:
-        print(f"\n❌ Fatal error: {str(e)}")
+        print(f"\nFatal error: {str(e)}")
         import traceback
         traceback.print_exc()
         sys.exit(1)

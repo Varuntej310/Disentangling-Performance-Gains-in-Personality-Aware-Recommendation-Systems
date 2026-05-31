@@ -10,7 +10,6 @@ from torch_geometric.data import HeteroData
 
 
 class GNN(torch.nn.Module):
-    """Base GNN encoder using GraphSAGE"""
     def __init__(self, hidden_channels):
         super().__init__()
         self.conv1 = SAGEConv(hidden_channels, hidden_channels)
@@ -23,7 +22,6 @@ class GNN(torch.nn.Module):
 
 
 class Classifier(torch.nn.Module):
-    """Link prediction classifier using dot product"""
     def forward(self, x_user: Tensor, x_movie: Tensor, edge_label_index: Tensor) -> Tensor:
         edge_feat_user = x_user[edge_label_index[0]]
         edge_feat_movie = x_movie[edge_label_index[1]]
@@ -34,7 +32,6 @@ class Classifier(torch.nn.Module):
 
 
 class PersonalityPredictor(torch.nn.Module):
-    """Personality prediction head for multi-task learning"""
     def __init__(self, in_channels, out_channels=5):
         super().__init__()
         self.lin1 = torch.nn.Linear(in_channels, out_channels)
@@ -45,7 +42,6 @@ class PersonalityPredictor(torch.nn.Module):
 
 
 class Model_graphsage(torch.nn.Module):
-    """2-layer GraphSage without personality features"""
     def __init__(self, hidden_channels, num_users, num_movies):
         super().__init__()
         self.user_lin = torch.nn.Linear(5, hidden_channels)
@@ -54,7 +50,6 @@ class Model_graphsage(torch.nn.Module):
         self.gnn = GNN(hidden_channels)
         self.classifier = Classifier()
         
-        # Will be set after initialization
         self.metadata = None
     
     def set_metadata(self, metadata):
@@ -64,12 +59,10 @@ class Model_graphsage(torch.nn.Module):
     def forward(self, data: HeteroData) -> Tensor:
         user_ids = data["user"].n_id
         movie_ids = data["movie"].n_id
-        
         x_dict = {
             "user": self.user_emb(user_ids),
             "movie": self.movie_emb(movie_ids),
         }
-        
         x_dict = self.gnn(x_dict, data.edge_index_dict)
         
         return self.classifier(
@@ -80,7 +73,6 @@ class Model_graphsage(torch.nn.Module):
 
 
 class Model_linear(torch.nn.Module):
-    """Linear combination of embeddings and personality features"""
     def __init__(self, hidden_channels, num_users, num_movies):
         super().__init__()
         self.user_lin = torch.nn.Linear(5, hidden_channels)
@@ -89,7 +81,6 @@ class Model_linear(torch.nn.Module):
         self.gnn = GNN(hidden_channels)
         self.classifier = Classifier()
         
-        # Will be set after initialization
         self.metadata = None
     
     def set_metadata(self, metadata):
@@ -115,7 +106,6 @@ class Model_linear(torch.nn.Module):
 
 
 class Model_concat(torch.nn.Module):
-    """Concatenation of embeddings and personality features"""
     def __init__(self, hidden_channels, num_users, num_movies, user_feature_dim=5):
         super().__init__()
         self.user_emb = torch.nn.Embedding(num_users, hidden_channels)
@@ -135,15 +125,12 @@ class Model_concat(torch.nn.Module):
         user_embedding = self.user_emb(data["user"].n_id)
         user_features = self.user_feat_lin(data["user"].x)
         user_features = F.relu(user_features)
-        
         combined_user_vec = torch.cat([user_embedding, user_features], dim=1)
         initial_user_x = self.user_combiner(combined_user_vec)
-        
         x_dict = {
             "user": initial_user_x,
             "movie": self.movie_emb(data["movie"].n_id),
         }
-        
         x_dict = self.gnn(x_dict, data.edge_index_dict)
         
         pred = self.classifier(
@@ -155,14 +142,12 @@ class Model_concat(torch.nn.Module):
 
 
 class Model_mtl(torch.nn.Module):
-    """Multi-task learning model with personality prediction"""
     def __init__(self, hidden_channels, num_users, num_movies):
         super().__init__()
         
         self.user_lin = torch.nn.Linear(5, hidden_channels)
         self.user_emb = torch.nn.Embedding(num_users, hidden_channels)
         self.movie_emb = torch.nn.Embedding(num_movies, hidden_channels)
-        
         self.gnn = GNN(hidden_channels)
         self.classifier = Classifier()
         self.personality_predictor = PersonalityPredictor(hidden_channels, out_channels=5)
@@ -178,15 +163,12 @@ class Model_mtl(torch.nn.Module):
             "user": self.user_emb(data["user"].n_id) + self.user_lin(data["user"].x),
             "movie": self.movie_emb(data["movie"].n_id),
         }
-        
         final_x_dict = self.gnn(x_dict, data.edge_index_dict)
-        
         pred_link = self.classifier(
             final_x_dict["user"],
             final_x_dict["movie"],
             data["user", "rates", "movie"].edge_label_index,
         )
-        
         pred_personality = self.personality_predictor(final_x_dict["user"])
         
         return {"link": pred_link, "personality": pred_personality}

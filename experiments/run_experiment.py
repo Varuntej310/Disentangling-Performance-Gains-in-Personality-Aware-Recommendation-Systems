@@ -17,13 +17,6 @@ from training.trainer import train_gnn_model, train_lightgcn
 
 
 def run_single_experiment(config_path: str):
-    """
-    Run a single experiment from YAML config
-    
-    Args:
-        config_path: Path to YAML config file
-    """
-    # Load config
     config = ExperimentConfig.from_yaml(config_path)
     print("="*70)
     print("STARTING EXPERIMENT")
@@ -31,13 +24,9 @@ def run_single_experiment(config_path: str):
     print(config)
     print("="*70)
     
-    # Create save directory
     os.makedirs(config.save_dir, exist_ok=True)
-    
-    # Save config copy
     config.to_yaml(os.path.join(config.save_dir, 'config.yaml'))
     
-    # Load data
     print("\n[1/5] Loading data...")
     dataset = MovieLensDataset(config)
     dataset.load_data()
@@ -45,18 +34,14 @@ def run_single_experiment(config_path: str):
     dataset.create_mappings()
     dataset.merge_features()
     
-    # Get edge index
     edge_index = dataset.get_edge_index()
-    
-    # Split edges
     print("\n[2/5] Splitting data...")
     train_edges, val_edges, test_edges = split_edges(
         edge_index,
         min_interactions=config.data.min_interactions,
         seed=config.training.seed
     )
-    
-    # Create HeteroData
+
     data = create_hetero_data(
         dataset.unique_user_id,
         dataset.unique_movie_id,
@@ -68,8 +53,7 @@ def run_single_experiment(config_path: str):
     print(f"  Users: {data['user'].num_nodes}")
     print(f"  Movies: {data['movie'].num_nodes}")
     print(f"  Personality features: {data['user'].x.shape[1]}")
-    
-    # Select model
+
     print(f"\n[3/5] Initializing model: {config.model.name}")
     model_map = {
         'Model_graphsage': Model_graphsage,
@@ -84,7 +68,6 @@ def run_single_experiment(config_path: str):
     
     model_class = model_map[config.model.name]
     
-    # Run multiple trials
     print(f"\n[4/5] Training ({config.training.num_runs} runs)...")
     all_results = []
     
@@ -93,15 +76,12 @@ def run_single_experiment(config_path: str):
         print(f"Run {run+1}/{config.training.num_runs}")
         print('='*70)
         
-        # Update seed for this run
         run_seed = config.training.seed + run * 100
         
-        # Create run-specific config
         from copy import deepcopy
         run_config = deepcopy(config)
         run_config.training.seed = run_seed
         
-        # Train model
         if config.model.name == 'LightGCN':
             results, model = train_lightgcn(
                 data=data,
@@ -132,7 +112,6 @@ def run_single_experiment(config_path: str):
             if k not in ['run', 'seed']:
                 print(f"  {k}: {v:.4f}")
     
-    # Aggregate results
     print(f"\n[5/5] Aggregating results...")
     avg_results = {}
     std_results = {}
@@ -154,7 +133,6 @@ def run_single_experiment(config_path: str):
         'timestamp': datetime.now().isoformat()
     }
     
-    # Save results
     results_path = os.path.join(config.save_dir, 'results.json')
     with open(results_path, 'w') as f:
         json.dump(final_results, f, indent=2)

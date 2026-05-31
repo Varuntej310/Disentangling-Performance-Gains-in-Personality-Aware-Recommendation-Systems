@@ -35,16 +35,13 @@ from experiments.ablations import evaluate_personality_ablation
 
 
 def main():
-    """Main experiment pipeline"""
-    
-    # Initialize config
     config = Config()
     
     print("="*60)
     print("Loading and preprocessing data...")
     print("="*60)
     
-    # Load and preprocess data
+    # Load and preprocess 
     dataset = MovieLensDataset(config)
     dataset.load_data()
     dataset.sparsify_ratings()
@@ -78,9 +75,9 @@ def main():
     print(f"  Personality features: {data['user'].x.shape[1]}")
     
     
-    # ========================================
+    
     # Experiment 1: Compare model architectures
-    # ========================================
+    
     # print("\n" + "="*60)
     # print("Experiment 1: Comparing model architectures")
     # print("="*60)
@@ -101,9 +98,9 @@ def main():
     # model_comparison_df.to_csv('results/model_comparison.csv', index=False)
     
     
-    # ========================================
+    
     # Experiment 2: LightGCN baseline
-    # ========================================
+
     print("\n" + "="*60)
     print("Experiment 2: Training LightGCN baseline")
     print("="*60)
@@ -122,9 +119,9 @@ def main():
         print(f"  {k}: {v:.4f}")
     
     
-    # ========================================
+    
     # Experiment 3: Lambda sweep for MTL
-    # ========================================
+
     print("\n" + "="*60)
     print("Experiment 3: Sweeping personality loss weight (lambda)")
     print("="*60)
@@ -146,9 +143,9 @@ def main():
     lambda_sweep_df.to_csv('results/lambda_sweep.csv', index=False)
     
     
-    # ========================================
+    
     # Experiment 4: Personality ablation
-    # ========================================
+    
     print("\n" + "="*60)
     print("Experiment 4: Personality feature ablation")
     print("="*60)
@@ -181,9 +178,9 @@ def main():
     print(f"  Delta: {ablation_results['delta']['NDCG@10']:.4f}")
     
     
-    # ========================================
+    
     # Experiment 5: Noise distribution sweep
-    # ========================================
+    
     print("\n" + "="*60)
     print("Experiment 5: Testing different noise distributions")
     print("="*60)

@@ -19,29 +19,15 @@ from experiments.ablations import evaluate_personality_ablation
 
 
 def run_experiment_with_ablation(config_path: str):
-    """
-    Run a single experiment and compute ablation metrics
-    Do not use this function for Model_graphsage as it has no personality features. instead use run_single_experiment or run_batch_experiments from run_experiment.py and run_batch_experiments.py respectively.
-    
-    Args:
-        config_path: Path to YAML config file
-    
-    Returns:
-        Dictionary with results including ablation metrics
-    """
-    # Load config
     config = ExperimentConfig.from_yaml(config_path)
     print("="*70)
     print(f"EXPERIMENT: {config.experiment_name}")
     print("="*70)
     print(config)
     print("="*70)
-    
-    # Create save directory
     os.makedirs(config.save_dir, exist_ok=True)
     config.to_yaml(os.path.join(config.save_dir, 'config.yaml'))
-    
-    # Load data
+
     print("\n[1/6] Loading data...")
     dataset = MovieLensDataset(config)
     dataset.load_data()
@@ -50,16 +36,13 @@ def run_experiment_with_ablation(config_path: str):
     dataset.merge_features()
     
     edge_index = dataset.get_edge_index()
-    
-    # Split edges
+
     print("\n[2/6] Splitting data...")
     train_edges, val_edges, test_edges = split_edges(
         edge_index,
         min_interactions=config.data.min_interactions,
         seed=config.training.seed
     )
-    
-    # Create HeteroData
     data = create_hetero_data(
         dataset.unique_user_id,
         dataset.unique_movie_id,
@@ -73,7 +56,6 @@ def run_experiment_with_ablation(config_path: str):
     print(f"  Sparsity: {config.data.sparsity_percentile}%")
     print(f"  Personality: {config.data.personality_type}")
     
-    # Select model
     print(f"\n[3/6] Initializing model: {config.model.name}")
     model_map = {
         'Model_linear': Model_linear,
@@ -83,7 +65,6 @@ def run_experiment_with_ablation(config_path: str):
     
     model_class = model_map[config.model.name]
     
-    # Run multiple trials
     print(f"\n[4/6] Training ({config.training.num_runs} runs)...")
     all_results = []
     all_models = []
@@ -93,12 +74,10 @@ def run_experiment_with_ablation(config_path: str):
         print(f"Run {run+1}/{config.training.num_runs}")
         print('='*70)
         
-        # Update seed for this run
         from copy import deepcopy
         run_config = deepcopy(config)
         run_config.training.seed = config.training.seed + run * 100
         
-        # Train model
         results, model = train_gnn_model(
             model_class=model_class,
             data=data,
@@ -120,7 +99,6 @@ def run_experiment_with_ablation(config_path: str):
             if k not in ['run', 'seed']:
                 print(f"  {k}: {v:.4f}")
     
-    # Aggregate results
     print(f"\n[5/6] Aggregating results...")
     avg_results = {}
     std_results = {}
@@ -138,12 +116,9 @@ def run_experiment_with_ablation(config_path: str):
     
     # Compute ablation metrics (personality vs zeroed)
     print(f"\n[6/6] Computing ablation (personality vs zeroed)...")
-    
-    # Use the best model (last trained model for simplicity)
     best_model = all_models[-1]
     device = torch.device(config.training.device if torch.cuda.is_available() else 'cpu')
     
-    # Combine train and val for ablation
     ablation_train = np.vstack([train_edges, val_edges])
     
     ablation_results = evaluate_personality_ablation(
@@ -167,8 +142,7 @@ def run_experiment_with_ablation(config_path: str):
     print(f"  Delta (real - zero):")
     for k, v in ablation_results['delta'].items():
         print(f"    {k}: {v:+.4f}")
-    
-    # Compile final results
+
     final_results = {
         'experiment_name': config.experiment_name,
         'model': config.model.name,
@@ -183,7 +157,6 @@ def run_experiment_with_ablation(config_path: str):
         'timestamp': datetime.now().isoformat()
     }
     
-    # Save results
     results_path = os.path.join(config.save_dir, 'results.json')
     with open(results_path, 'w') as f:
         json.dump(final_results, f, indent=2)
@@ -194,14 +167,6 @@ def run_experiment_with_ablation(config_path: str):
 
 
 def run_all_ablation_experiments(config_dir="config/experiments/ablation_table", pattern="*.yaml"):
-    """
-    Run all ablation experiments and generate summary
-    
-    Args:
-        config_dir: Directory containing experiment configs
-        pattern: Glob pattern for config files
-    """
-    # Find all config files
     config_pattern = os.path.join(config_dir, pattern)
     config_files = sorted(glob.glob(config_pattern))
     
@@ -217,7 +182,6 @@ def run_all_ablation_experiments(config_dir="config/experiments/ablation_table",
     print(f"Total training runs: {len(config_files) * 3}")
     print("="*70)
     
-    # Run all experiments
     all_results = []
     failed_experiments = []
     
@@ -236,7 +200,6 @@ def run_all_ablation_experiments(config_dir="config/experiments/ablation_table",
             failed_experiments.append(config_path)
             continue
     
-    # Generate summary table
     print("\n" + "="*70)
     print("GENERATING SUMMARY TABLE")
     print("="*70)
@@ -252,16 +215,13 @@ def run_all_ablation_experiments(config_dir="config/experiments/ablation_table",
             'num_runs': res['num_runs'],
         }
         
-        # Add average metrics (with personality)
         for k, v in res['avg_metrics'].items():
             row[k] = v
         
-        # Add ablation metrics (zeroed personality)
         if 'ablation' in res and 'zero' in res['ablation']:
             for k, v in res['ablation']['zero'].items():
                 row[f"{k}_zeroed"] = v
         
-        # Add delta
         if 'ablation' in res and 'delta' in res['ablation']:
             for k, v in res['ablation']['delta'].items():
                 row[f"{k}_delta"] = v
@@ -270,16 +230,13 @@ def run_all_ablation_experiments(config_dir="config/experiments/ablation_table",
     
     summary_df = pd.DataFrame(summary_data)
     
-    # Sort for better readability
     summary_df = summary_df.sort_values(['model', 'personality', 'sparsity'])
     
-    # Save summary
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     summary_path = f"results/ablation_table_summary_{timestamp}.csv"
     os.makedirs("results", exist_ok=True)
     summary_df.to_csv(summary_path, index=False)
     
-    # Print formatted table
     print("\n" + "="*100)
     print("ABLATION TABLE RESULTS")
     print("="*100)

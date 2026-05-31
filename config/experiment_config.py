@@ -34,7 +34,6 @@ class DataConfig:
     
 @dataclass
 class ModelConfig:
-    """Model architecture configuration"""
     name: str = "Model_linear"  # Model_linear, Model_concat, Model_mtl, LightGCN
     hidden_channels: int = 5
     num_neighbors: List[int] = field(default_factory=lambda: [20, 10])
@@ -49,7 +48,6 @@ class ModelConfig:
 
 @dataclass
 class TrainingConfig:
-    """Training configuration"""
     num_epochs: int = 50
     batch_size: int = 128
     lr: float = 1e-3
@@ -62,14 +60,12 @@ class TrainingConfig:
 
 @dataclass
 class EvalConfig:
-    """Evaluation configuration"""
     k_list: List[int] = field(default_factory=lambda: [3, 5, 10])
     num_negatives: int = 99
 
 
 @dataclass
 class ExperimentConfig:
-    """Complete experiment configuration"""
     experiment_name: str = "baseline"
     paths: PathConfig = field(default_factory=PathConfig)
     data: DataConfig = field(default_factory=DataConfig)
@@ -80,14 +76,12 @@ class ExperimentConfig:
     
     @classmethod
     def from_yaml(cls, path: str):
-        """Load configuration from YAML file"""
         with open(path, 'r') as f:
             config_dict = yaml.safe_load(f)
         return cls.from_dict(config_dict)
     
     @classmethod
     def from_dict(cls, config_dict: Dict[str, Any]):
-        """Create config from dictionary"""
         paths = PathConfig(**config_dict.get('paths', {}))
         data = DataConfig(**config_dict.get('data', {}))
         model = ModelConfig(**config_dict.get('model', {}))
@@ -105,7 +99,6 @@ class ExperimentConfig:
         )
     
     def to_dict(self):
-        """Convert config to dictionary"""
         return {
             'experiment_name': self.experiment_name,
             'paths': self.paths.__dict__,
@@ -117,13 +110,11 @@ class ExperimentConfig:
         }
     
     def to_yaml(self, path: str):
-        """Save configuration to YAML file"""
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w') as f:
             yaml.dump(self.to_dict(), f, default_flow_style=False)
     
     def __repr__(self):
-        """Pretty print configuration"""
         lines = [
             f"Experiment: {self.experiment_name}",
             f"  Model: {self.model.name}",
